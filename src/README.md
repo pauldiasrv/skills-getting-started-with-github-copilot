@@ -48,3 +48,25 @@ The application uses a simple data model with meaningful identifiers:
    - Grade level
 
 All data is stored in memory, which means data will be reset when the server restarts.
+
+## Backend Tests
+
+Backend API tests are located in the top-level `tests/` directory and use `pytest` with the Arrange-Act-Assert (AAA) pattern.
+
+1. Install dependencies from the repository root:
+
+   ```
+   pip install -r requirements.txt
+   ```
+
+2. Run all backend tests:
+
+   ```
+   pytest -q
+   ```
+
+3. Run a specific test file:
+
+   ```
+   pytest -q tests/test_signup.py
+   ```
