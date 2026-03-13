@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 import os
 from pathlib import Path
+from pydantic import EmailStr
 
 app = FastAPI(title="Mergington High School API",
               description="API for viewing and signing up for extracurricular activities")
@@ -92,8 +93,11 @@ def get_activities():
 
 
 @app.post("/activities/{activity_name}/signup")
-def signup_for_activity(activity_name: str, email: str):
+def signup_for_activity(activity_name: str, email: EmailStr):
     """Sign up a student for an activity"""
+    # Normalize email for consistent storage and comparison
+    normalized_email = email.strip().lower()
+
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -102,17 +106,20 @@ def signup_for_activity(activity_name: str, email: str):
     activity = activities[activity_name]
 
     # Validate student is not already signed up
-    if email in activity["participants"]:
+    if normalized_email in activity["participants"]:
         raise HTTPException(status_code=400, detail="Student already signed up")
 
     # Add student
-    activity["participants"].append(email)
-    return {"message": f"Signed up {email} for {activity_name}"}
+    activity["participants"].append(normalized_email)
+    return {"message": f"Signed up {normalized_email} for {activity_name}"}
 
 
 @app.delete("/activities/{activity_name}/participants")
-def unregister_participant(activity_name: str, email: str):
+def unregister_participant(activity_name: str, email: EmailStr):
     """Unregister a student from an activity"""
+    # Normalize email for consistent comparison and removal
+    normalized_email = email.strip().lower()
+
     # Validate activity exists
     if activity_name not in activities:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -121,9 +128,9 @@ def unregister_participant(activity_name: str, email: str):
     activity = activities[activity_name]
 
     # Validate student is currently signed up
-    if email not in activity["participants"]:
+    if normalized_email not in activity["participants"]:
         raise HTTPException(status_code=404, detail="Participant not found in this activity")
 
     # Remove student
-    activity["participants"].remove(email)
-    return {"message": f"Unregistered {email} from {activity_name}"}
+    activity["participants"].remove(normalized_email)
+    return {"message": f"Unregistered {normalized_email} from {activity_name}"}
