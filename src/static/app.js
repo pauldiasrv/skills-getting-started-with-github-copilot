@@ -28,22 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const spotsLeft = details.max_participants - details.participants.length;
         const participantCount = details.participants.length;
-        const participantsList = details.participants
-          .map(
-            (participant) =>
-              `<li>
-                <span class="participant-email">${participant}</span>
-                <button
-                  type="button"
-                  class="participant-remove"
-                  data-activity="${name}"
-                  data-email="${participant}"
-                  aria-label="Unregister ${participant} from ${name}"
-                  title="Unregister participant"
-                >&times;</button>
-              </li>`
-          )
-          .join("");
 
         activityCard.innerHTML = `
           <h4>${name}</h4>
@@ -52,13 +36,46 @@ document.addEventListener("DOMContentLoaded", () => {
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants-section">
             <p class="participants-title"><strong>Participants (${participantCount})</strong></p>
-            ${
-              participantCount > 0
-                ? `<ul class="participants-list">${participantsList}</ul>`
-                : '<p class="participants-empty">No participants yet.</p>'
-            }
+            <div class="participants-container"></div>
           </div>
         `;
+
+        // Safely populate participants list without injecting HTML
+        const participantsSection = activityCard.querySelector(".participants-section");
+        const participantsContainer = participantsSection.querySelector(".participants-container");
+
+        if (participantCount > 0) {
+          const ul = document.createElement("ul");
+          ul.className = "participants-list";
+
+          details.participants.forEach((participant) => {
+            const li = document.createElement("li");
+
+            const span = document.createElement("span");
+            span.className = "participant-email";
+            span.textContent = participant;
+
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "participant-remove";
+            button.dataset.activity = name;
+            button.dataset.email = participant;
+            button.ariaLabel = `Unregister ${participant} from ${name}`;
+            button.title = "Unregister participant";
+            button.textContent = "×";
+
+            li.appendChild(span);
+            li.appendChild(button);
+            ul.appendChild(li);
+          });
+
+          participantsContainer.appendChild(ul);
+        } else {
+          const emptyMsg = document.createElement("p");
+          emptyMsg.className = "participants-empty";
+          emptyMsg.textContent = "No participants yet.";
+          participantsContainer.appendChild(emptyMsg);
+        }
 
         activitiesList.appendChild(activityCard);
 
